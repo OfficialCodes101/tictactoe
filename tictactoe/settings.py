@@ -23,15 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-9fzv7^5@j2y2w3(#jd!s=y%rce1s^tf4ruu+$=g%60*wtr#@!b"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["officialcodes101.pythonanywhere.com"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    "daphne",
     "game",
     "frontend",
     "rest_framework",
@@ -120,6 +119,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = "staticroot/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
