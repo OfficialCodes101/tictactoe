@@ -44,3 +44,10 @@ body {
   cursor: not-allowed !important;
   pointer-events: none;
 }
+
+@media (max-width: 767px) {
+  .board-cell {
+    height: calc(10px + 10vh);
+    width: calc(20px + 10vh);
+  }
+}

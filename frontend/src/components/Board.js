@@ -6,6 +6,7 @@ export default function Board(props) {
     props.boardMoveCallback(buttonIndex);
   }
 
+  console.log(props.board);
   return (
     <Grid container spacing={0.5}>
       {props.board.map((move, index) => {
@@ -15,9 +16,9 @@ export default function Board(props) {
               variant="contained"
               disableElevation
               className={
-                props.disabledButtons[index] || 
-                props.turn === props.computerShape 
-                  ? "board-button disabled-button" 
+                props.disabledButtons[index] ||
+                props.turn === props.computerShape
+                  ? "board-button disabled-button"
                   : "board-button"
               }
               fullWidth

@@ -5,7 +5,7 @@ BOARD_AREA = 3
 
 
 def get_turns():
-    choices = ["✖", "⭕"]
+    choices = ["❌", "⭕"]
     player_shape = random.choice(choices)
     choices.remove(player_shape)
     computer_shape = choices[0]
