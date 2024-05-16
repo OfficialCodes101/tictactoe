@@ -15,17 +15,10 @@ module.exports = {
           loader: "babel-loader",
         },
       },
-      {
-        test: /.jsx$/,
-        exclude: /node_modules/,
-        use: {
-          loader: "babel-loader",
-        },
-      },
     ],
   },
   resolve: {
-    extensions: [".js", ".jsx"],
+    extensions: [".js"],
   },
   optimization: {
     minimize: true,
