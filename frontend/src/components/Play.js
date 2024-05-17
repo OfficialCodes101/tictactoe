@@ -1,14 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Grid, Typography } from "@mui/material";
+import { Button, Grid, Typography, Alert, Collapse } from "@mui/material";
 import Board from "./Board";
 import GameOver from "./GameOver";
+import GameAlert from "./GameAlert";
+import useWebSocket from "react-use-websocket";
 
 export default function Play(props) {
   const navigate = useNavigate();
-  const [gameData, setGameData] = useState({
-    data: {},
-  });
   const [feedback, setFeedback] = useState("");
   const [disabledButtons, setDisabledButtons] = useState(Array(9).fill(true));
   const [gameOverData, setGameOverData] = useState({
@@ -18,6 +17,63 @@ export default function Play(props) {
   const [turn, setTurn] = useState(null);
   const [playerShape, setPlayerShape] = useState(null);
   const [computerShape, setComputerShape] = useState(null);
+  const [alertActive, setAlertActive] = useState(false);
+
+  const {
+    getWebSocket,
+    sendMessage,
+    sendJsonMessage,
+    lastMessage,
+    lastJsonMessage,
+  } = useWebSocket("ws://localhost:8000/ws/game/", {
+    onOpen: () => {
+      console.log("Connected");
+      setAlertActive(false);
+      getGame();
+    },
+    onClose: () => {
+      console.log("Disconnected");
+      setAlertActive(true);
+      setFeedback(null);
+      setDisabledButtons(Array(9).fill(true));
+    },
+    onError: (e) => console.log(e),
+    onMessage: (message) => handleMessages(JSON.parse(message.data)),
+    shouldReconnect: () => true,
+  });
+
+  function handleMessages(data) {
+    console.log(data);
+    if (data.type === "player_move") {
+      if (!data.winner) {
+        setFeedback("Computer is thinking...");
+        //getComputerMove();
+        sendJsonMessage({ type: "get_computer_move" });
+      } else if (data.winner === "tie") {
+        getGame();
+      } else {
+        setGameOverData({ data: { winner: data.winner, gameOver: true } });
+      }
+    } else if (data.type === "computer_move") {
+      const tempDisabled = [...disabledButtons];
+      tempDisabled[data.move] = true;
+      setDisabledButtons(tempDisabled);
+      const tempBoard = [...board];
+      tempBoard[data.move] = computerShape;
+      setBoard(tempBoard);
+
+      if (!data.winner) {
+        setFeedback("Your move");
+        setTurn(playerShape);
+      } else if (data.winner === "tie") {
+        getGame();
+      } else {
+        setTimeout(() => {
+          setGameOverData({ data: { winner: data.winner, gameOver: true } });
+        }, 1000);
+      }
+    }
+  }
 
   function getGame() {
     fetch("/api/game")
@@ -37,7 +93,7 @@ export default function Play(props) {
           setFeedback(`Your move`);
         } else {
           setFeedback(`Computer is thinking...`);
-          getComputerMove();
+          sendJsonMessage({ type: "get_computer_move" });
         }
         const nonEmptyButtons = data.board.map((elem) => {
           return elem !== " ";
@@ -58,85 +114,16 @@ export default function Play(props) {
     });
   }
 
-  async function getComputerMove() {
-    const requestOptions = {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-    };
-
-    fetch("/api/computer-move", requestOptions)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("Something went wrong");
-      })
-      .then((data) => {
-        const tempDisabled = [];
-        data.board.forEach((item, index) => {
-          if (item === " ") {
-            tempDisabled.push(false);
-          } else {
-            tempDisabled.push(true);
-          }
-        });
-        setDisabledButtons(tempDisabled);
-
-        setBoard(data.board);
-        setTurn(data.turn);
-
-        if (!data.winner) {
-          setFeedback("Your move");
-        } else if (data.winner === "tie") {
-          getGame();
-        } else {
-          setDisabledButtons(Array(9).fill(true));
-          setTimeout(() => {
-            setGameOverData({ data: { winner: data.winner, gameOver: true } });
-          }, 1000);
-        }
-      })
-      .catch((err) => console.error(err.message));
-  }
-
   function boardMoveCallback(index) {
     const tempDisabled = [...disabledButtons];
     tempDisabled[index] = true;
     setDisabledButtons(tempDisabled);
-    setTurn(playerShape);
+    setTurn(computerShape);
+    const tempBoard = [...board];
+    tempBoard[index] = playerShape;
+    setBoard(tempBoard);
 
-    const requestOptions = {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ move: index }),
-    };
-    fetch("/api/player-move", requestOptions)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-      })
-      .then((data) => {
-        const tempDisabled = [];
-        data.board.forEach((item, index) => {
-          if (item === " ") {
-            tempDisabled.push(false);
-          } else {
-            tempDisabled.push(true);
-          }
-        });
-
-        setDisabledButtons(tempDisabled);
-        setBoard(data.board);
-        if (!data.winner) {
-          setFeedback("Computer is thinking...");
-          getComputerMove();
-        } else if (data.winner === "tie") {
-          getGame();
-        } else {
-          setGameOverData({ data: { winner: data.winner, gameOver: true } });
-        }
-      });
+    sendJsonMessage({ type: "player_move", move: index });
   }
 
   async function boardWinnerCallback() {
@@ -158,6 +145,7 @@ export default function Play(props) {
         />
       ) : (
         <Grid container spacing={2}>
+          <GameAlert alertActive={alertActive} />
           <Grid item xs={12}>
             {feedback ? (
               <Typography

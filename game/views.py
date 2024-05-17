@@ -119,7 +119,6 @@ class PlayerMove(APIView):
             return Response({"winner": winner, "board": list(board)}, status=status.HTTP_200_OK)
         return Response({}, status=status.HTTP_404_NOT_FOUND)
     
-
 class ComputerMove(APIView):
     def put(self, request, format=None):
         queryset = Game.objects.filter(player=self.request.session.session_key)

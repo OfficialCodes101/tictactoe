@@ -6,12 +6,17 @@ export default function Board(props) {
     props.boardMoveCallback(buttonIndex);
   }
 
-  console.log(props.board);
   return (
     <Grid container spacing={0.5}>
       {props.board.map((move, index) => {
         return (
-          <Grid item xs={4} align="center" className="board-cell" key={index}>
+          <Grid
+            item
+            xs={4}
+            align="center"
+            className={`board-cell button-${index}`}
+            key={index}
+          >
             <Button
               variant="contained"
               disableElevation

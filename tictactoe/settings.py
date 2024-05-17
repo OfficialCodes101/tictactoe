@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "game",
     "frontend",
     "rest_framework",
@@ -72,6 +73,7 @@ TEMPLATES = [
     },
 ]
 
+WSGI_APPLICATION = "tictactoe.wsgi.application"
 ASGI_APPLICATION = "tictactoe.asgi.application"
 
 

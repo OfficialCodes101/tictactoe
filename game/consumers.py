@@ -8,7 +8,7 @@ class GameConsumer(WebsocketConsumer):
     def connect(self):
         self.accept()
         self.player = self.scope["session"]._get_session_from_db()
-        print(self.scope)
+        print(self.player)
         queryset = Game.objects.filter(player=self.player)
         if queryset.exists():
             game = queryset[0]
@@ -24,6 +24,7 @@ class GameConsumer(WebsocketConsumer):
         try:
             data = json.loads(text_data)
         except:
+            print("Couldn't load data")
             return
         print(data)
 
@@ -40,35 +41,32 @@ class GameConsumer(WebsocketConsumer):
                 return
 
             if data["type"] == "player_move":
-                move_index = data.get("move")
-                game_board_list = list(game.board)
-                game_board_list[move_index] = game.player_shape
-                game.board = ''.join(game_board_list)
+                if not game.turn == game.player_shape:
+                    return self.send(json.dumps({"type": "error", "message": "Not player's turn"}))
+                move_index = data["move"]
+                board = game.board
+                game.board = board[:move_index] + game.player_shape + board[move_index+1:]
                 game.turn = game.computer_shape
                 game.save(update_fields=["board", "turn"])
                 print("Player move made")
 
                 if results := game_over(convert_board(game.board), game.player_shape, game.computer_shape):
-                    winner = json.dumps({"type": "game_over", "winner": results})
+                    message = json.dumps({"type": "player_move", "winner": results})
                     game.board = "         "
                     game.save()
-                    self.send(winner)
                     print("Game over")
+                else:
+                    message = json.dumps({"type": "player_move", "winner": None})
+                self.send(message)
                 return
+            
             elif data["type"] == "get_computer_move":
                 board_str = game.board
                 if not game.turn == game.computer_shape:
-                    return self.send(json.dumps({"error": "forbidden"}))
-                computer_move, results = play_computer_move(game, convert_board(board_str))
-                self.send(json.dumps(computer_move))
-
-                if results is not None:
-                    game.board = "         "
-                    game.save()
-                    self.send(json.dumps(results))
-                return
+                    return self.send(json.dumps({"type": "error", "message": "Not computer's turn"}))
+                results = play_computer_move(game, convert_board(board_str))
+                return self.send(json.dumps(results))
         print("Nothing found")
-                    
         return super().receive(text_data, bytes_data)
     
     def disconnect(self, code):

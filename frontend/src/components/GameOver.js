@@ -19,11 +19,6 @@ export default function GameOver(props) {
         )}
       </Grid>
       <Grid item xs={12} align="center">
-        <Typography variant="h6" component="h6">
-          Score:
-        </Typography>
-      </Grid>
-      <Grid item xs={12} align="center">
         <ButtonGroup>
           <Button
             variant="contained"

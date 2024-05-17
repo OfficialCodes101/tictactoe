@@ -159,22 +159,19 @@ def convert_2d_move_to_1d(move):
 
 
 def play_computer_move(game: Game, board):
-    move_index_2d = computer_move(board, game.difficulty, game.player_shape, game.computer_shape)
-    move_index_1d = convert_2d_move_to_1d(move_index_2d)
-    board[move_index_2d[0]][move_index_2d[1]] = game.computer_shape
+    move_index = convert_2d_move_to_1d(computer_move(board, game.difficulty, game.player_shape, game.computer_shape))
 
-    print(move_index_1d)
-    game_board_list = list(game.board)
-    game_board_list[move_index_1d] = game.computer_shape
-    game.board = ''.join(game_board_list)
+    print(move_index)
+    game.board = game.board[:move_index] + game.computer_shape + game.board[move_index+1:]
     game.turn = game.player_shape
     game.save(update_fields=["board", "turn"])
 
-    if winner := game_over(board, game.player_shape, game.computer_shape):
-        results = {"type": "game_over", "winner": winner}
-        return {"type": "computer_move", "move": move_index_1d}, results
-    return {"type": "computer_move", "move": move_index_1d}, None
-
-
+    winner = game_over(convert_board(game.board), game.player_shape, game.computer_shape)
+    if winner is not None:
+        game.board = "         "
+        game.save(update_fields=["board"])
+    print(winner)
+    return {"type": "computer_move", "move": move_index, "winner": winner}
+    
 def board_is_empty(board):
     return all(cell == " " for row in convert_board(board) for cell in row)
