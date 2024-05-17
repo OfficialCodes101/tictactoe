@@ -24,9 +24,7 @@ class GameConsumer(WebsocketConsumer):
         try:
             data = json.loads(text_data)
         except:
-            print("Couldn't load data")
             return
-        print(data)
 
         queryset = Game.objects.filter(player=self.player)
         if queryset.exists():
@@ -37,7 +35,6 @@ class GameConsumer(WebsocketConsumer):
                 game.board = "         "
                 game.save()
                 self.send(winner)
-                print("Game over")
                 return
 
             if data["type"] == "player_move":
@@ -48,13 +45,11 @@ class GameConsumer(WebsocketConsumer):
                 game.board = board[:move_index] + game.player_shape + board[move_index+1:]
                 game.turn = game.computer_shape
                 game.save(update_fields=["board", "turn"])
-                print("Player move made")
 
                 if results := game_over(convert_board(game.board), game.player_shape, game.computer_shape):
                     message = json.dumps({"type": "player_move", "winner": results})
                     game.board = "         "
                     game.save()
-                    print("Game over")
                 else:
                     message = json.dumps({"type": "player_move", "winner": None})
                 self.send(message)
@@ -66,7 +61,6 @@ class GameConsumer(WebsocketConsumer):
                     return self.send(json.dumps({"type": "error", "message": "Not computer's turn"}))
                 results = play_computer_move(game, convert_board(board_str))
                 return self.send(json.dumps(results))
-        print("Nothing found")
         return super().receive(text_data, bytes_data)
     
     def disconnect(self, code):
