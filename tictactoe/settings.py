@@ -45,7 +45,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -82,8 +81,12 @@ ASGI_APPLICATION = "tictactoe.asgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "myproject",
+        "USER": "myprojectuser",
+        "PASSWORD": "password",
+        "HOST": "localhost",
+        "PORT": ""
     }
 }
 
@@ -123,13 +126,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = "staticfiles/"
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static")
-]
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
