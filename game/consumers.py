@@ -1,13 +1,13 @@
 from channels.generic.websocket import WebsocketConsumer
 import json
 from .models import Game
-from .util import game_over, convert_board, play_computer_move, board_is_empty
+from .util import game_over, convert_board, play_computer_move
 
 
 class GameConsumer(WebsocketConsumer):
     def connect(self):
         self.accept()
-        self.player = self.scope["session"]._get_session_from_db()
+        self.player = self.scope["session"].session_key
         print(self.player)
         queryset = Game.objects.filter(player=self.player)
         if queryset.exists():

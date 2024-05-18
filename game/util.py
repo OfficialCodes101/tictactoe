@@ -161,7 +161,6 @@ def convert_2d_move_to_1d(move):
 def play_computer_move(game: Game, board):
     move_index = convert_2d_move_to_1d(computer_move(board, game.difficulty, game.player_shape, game.computer_shape))
 
-    print(move_index)
     game.board = game.board[:move_index] + game.computer_shape + game.board[move_index+1:]
     game.turn = game.player_shape
     game.save(update_fields=["board", "turn"])
@@ -170,7 +169,6 @@ def play_computer_move(game: Game, board):
     if winner is not None:
         game.board = "         "
         game.save(update_fields=["board"])
-    print(winner)
     return {"type": "computer_move", "move": move_index, "winner": winner}
     
 def board_is_empty(board):
