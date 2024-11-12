@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Grid, Typography, Alert, Collapse } from "@mui/material";
+import { Button, Grid, Typography } from "@mui/material";
 import Board from "./Board";
 import GameOver from "./GameOver";
 import GameAlert from "./GameAlert";
 import useWebSocket from "react-use-websocket";
 
-export default function Play(props) {
+export default function PlayComputer(props) {
   const navigate = useNavigate();
   const [feedback, setFeedback] = useState("");
   const [disabledButtons, setDisabledButtons] = useState(Array(9).fill(true));
@@ -18,6 +18,7 @@ export default function Play(props) {
   const [playerShape, setPlayerShape] = useState(null);
   const [computerShape, setComputerShape] = useState(null);
   const [alertActive, setAlertActive] = useState(false);
+  const [pattern, setPattern] = useState([]);
 
   const {
     getWebSocket,
@@ -25,7 +26,7 @@ export default function Play(props) {
     sendJsonMessage,
     lastMessage,
     lastJsonMessage,
-  } = useWebSocket("ws://localhost:8000/ws/game/", {
+  } = useWebSocket("ws://localhost:8000/ws/play-computer/", {
     onOpen: () => {
       console.log("Connected");
       setAlertActive(false);
@@ -45,38 +46,66 @@ export default function Play(props) {
   function handleMessages(data) {
     console.log(data);
     if (data.type === "player_move") {
-      if (!data.winner) {
+      if (!data.content.winner) {
         setFeedback("Computer is thinking...");
         //getComputerMove();
         sendJsonMessage({ type: "get_computer_move" });
-      } else if (data.winner === "tie") {
+      } else if (data.content.winner === "tie") {
         getGame();
       } else {
-        setGameOverData({ data: { winner: data.winner, gameOver: true } });
+        setGameOverData({
+          data: {
+            ...gameOverData.data,
+            winner: data.content.winner,
+          },
+        });
+        setPattern(data.content.pattern);
+
+        setTimeout(() => {
+          setGameOverData({
+            data: {
+              ...gameOverData.data,
+              gameOver: true,
+            },
+          });
+        }, 2000);
       }
     } else if (data.type === "computer_move") {
       const tempDisabled = [...disabledButtons];
-      tempDisabled[data.move] = true;
+      tempDisabled[data.content.move] = true;
       setDisabledButtons(tempDisabled);
       const tempBoard = [...board];
-      tempBoard[data.move] = computerShape;
+      tempBoard[data.content.move] = computerShape;
       setBoard(tempBoard);
 
-      if (!data.winner) {
+      if (!data.content.winner) {
         setFeedback("Your move");
         setTurn(playerShape);
-      } else if (data.winner === "tie") {
+      } else if (data.content.winner === "tie") {
         getGame();
       } else {
+        setGameOverData({
+          data: {
+            ...gameOverData.data,
+            winner: data.content.winner,
+          },
+        });
+        setPattern(data.content.pattern);
         setTimeout(() => {
-          setGameOverData({ data: { winner: data.winner, gameOver: true } });
-        }, 1000);
+          setGameOverData({
+            data: {
+              ...gameOverData.data,
+              gameOver: true,
+            },
+          });
+        }, 2000);
       }
+    } else if (data.type === "game_over") {
     }
   }
 
   function getGame() {
-    fetch("/api/game")
+    fetch("/api/computer/game")
       .then((response) => {
         if (response.ok) {
           return response.json();
@@ -107,7 +136,7 @@ export default function Play(props) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     };
-    fetch("/api/leave", requestOptions).then((response) => {
+    fetch("/api/computer/leave", requestOptions).then((response) => {
       if (response.ok) {
         navigate("/");
       }
@@ -142,6 +171,8 @@ export default function Play(props) {
           data={gameOverData.data}
           boardWinnerCallback={boardWinnerCallback}
           leaveGameCallback={handleLeaveButtonClicked}
+          player={playerShape}
+          computer={computerShape}
         />
       ) : (
         <Grid container spacing={2}>
@@ -162,9 +193,12 @@ export default function Play(props) {
             <Board
               disabledButtons={disabledButtons}
               board={board}
+              playerShape={playerShape}
               computerShape={computerShape}
               turn={turn}
               boardMoveCallback={boardMoveCallback}
+              gameOverData={gameOverData.data}
+              pattern={pattern}
             ></Board>
           </Grid>
           <Grid item xs={12} align="center">

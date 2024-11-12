@@ -8,21 +8,20 @@ import {
   Radio,
   Button,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { Form, Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const pages = {
   SETUP: 0,
   PROCEED: 1,
 };
 
-export default function Setup(props) {
+export default function SetupComputer(props) {
   const defaultDifficulty = "medium";
   const [difficulty, setDifficulty] = useState(defaultDifficulty);
   const [page, setPage] = useState(pages.SETUP);
   const [data, setData] = useState({ data: {} });
 
-  const navigate = useNavigate();
   function handleRadioChange(e) {
     setDifficulty(e.target.value);
   }
@@ -34,7 +33,7 @@ export default function Setup(props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ difficulty }),
     };
-    fetch("/api/setup", requestOptions)
+    fetch("/api/computer/setup", requestOptions)
       .then((response) => {
         if (response.ok) {
           return response.json();
@@ -128,7 +127,7 @@ export default function Setup(props) {
           <Button
             variant="contained"
             color="success"
-            to="/play"
+            to="/play-computer"
             component={Link}
           >
             Play Now

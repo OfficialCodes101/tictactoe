@@ -8,7 +8,7 @@ export default function GameOver(props) {
   return (
     <Grid container spacing={1}>
       <Grid item xs={12} align="center">
-        {props.data.winner === "user" ? (
+        {props.data.winner === props.data.player ? (
           <Typography variant="h4" component="h4">
             You Win
           </Typography>
@@ -33,7 +33,7 @@ export default function GameOver(props) {
             variant="contained"
             color="primary"
             onClick={() => {
-              navigate("/setup");
+              navigate("/setup-computer");
             }}
           >
             Change Difficulty

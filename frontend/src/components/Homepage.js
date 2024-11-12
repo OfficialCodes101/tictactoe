@@ -12,10 +12,12 @@ export default function Homepage(props) {
       </Grid>
       <Grid item xs={12} align="center">
         <ButtonGroup variant="contained">
-          <Button color="primary" to="/setup" component={Link}>
+          <Button color="primary" to="/setup-computer" component={Link}>
             Play Computer
           </Button>
-          <Button color="secondary">Play Friend</Button>
+          <Button color="secondary" to="/setup-multiplayer" component={Link}>
+            Play Friend
+          </Button>
         </ButtonGroup>
       </Grid>
     </Grid>

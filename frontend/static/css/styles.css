@@ -23,12 +23,21 @@
   height: calc(50px + 15vh);
   width: calc(100px + 12vh);
   border: 1px solid black !important;
+  transition: background-color 500ms ease !important;
 }
 
 .board-button {
   height: 100%;
-  background-color: white !important;
+  background-color: inherit !important;
   font-size: 2rem !important;
+}
+
+.board-cell.red {
+  background-color: rgb(255, 50, 50) !important;
+}
+
+.board-cell.green {
+  background-color: rgb(12, 255, 12) !important;
 }
 
 .button-0,

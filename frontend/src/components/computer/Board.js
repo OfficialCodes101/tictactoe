@@ -6,6 +6,16 @@ export default function Board(props) {
     props.boardMoveCallback(buttonIndex);
   }
 
+  function getCellClassName(index) {
+    if (props.pattern.includes(index)) {
+      if (props.gameOverData.winner === props.playerShape) {
+        return "green";
+      } else if (props.gameOverData.winner === props.computerShape) {
+        return "red";
+      }
+    }
+  }
+
   return (
     <Grid container spacing={0.5}>
       {props.board.map((move, index) => {
@@ -14,7 +24,7 @@ export default function Board(props) {
             item
             xs={4}
             align="center"
-            className={`board-cell button-${index}`}
+            className={`board-cell button-${index} ${getCellClassName(index)}`}
             key={index}
           >
             <Button

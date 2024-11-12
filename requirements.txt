@@ -1,0 +1,5 @@
+django
+djangorestframework
+channels["daphne"]
+redis
+channels-redis
